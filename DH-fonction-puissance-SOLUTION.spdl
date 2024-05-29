@@ -1,0 +1,62 @@
+function p;
+const g;
+hashfunction h;
+const x:Nonce;
+const y:Nonce;
+
+protocol @exponentiation(RA)
+{
+	role RA
+	{
+		var a,b: Ticket;
+
+		recv_!1(RA,RA, p(p(g,a),b) );
+		send_!2(RA,RA, p(p(g,b),a) );
+	}
+}
+
+protocol DH(I,R) {
+	role I
+		{
+		fresh x: Nonce;
+		var y: Nonce;
+
+		send_1(I,R, I ,p(g,x) );
+		recv_2(R,I, R , I , p(g,y), { h (R , I , p(g,y) , p(g,x) ) }sk(R) );
+		send_3(I,R, I ,R  , {h ( I , R ,p(g,x) , p(g,y) ) }sk(I) );
+
+		macro sk=p(p(g,x),y);
+	
+		claim_I1(I,Secret,x);
+		claim_I1(I,Secret,p(g,x));
+                claim_I2(I,Secret,y);
+                claim_I3(I,Nisynch);
+
+                claim_I5(I,Secret,sk);  
+               
+		}
+
+	role R
+		{
+		var x: Nonce;
+		fresh y : Nonce;
+              
+		recv_1(I,R, I , p(g,x) );
+		send_2(R,I, R , I , p(g,y), { h (R , I , p(g,y) , p(g,x) ) }sk(R) );
+		recv_3(I,R, I ,R  , {h ( I , R ,p(g,x) , p(g,y) ) }sk(I) );
+		
+                macro sk=p( p(g,y), x);
+		
+		claim_R1(R,Secret,x);
+		claim_R1(R,Secret,p(g,y));
+                claim_R2(R,Secret,y);
+		claim_R3(R,Nisynch);
+
+                claim_R5(R,Secret,sk);
+       
+		}
+}
+
+const Eve:Agent;
+untrusted Eve;
+compromised p(p(g,x),y);

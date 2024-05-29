@@ -1,0 +1,63 @@
+usertype Timestamp;
+
+hashfunction h;
+protocol carlson(A,B,S) {
+
+secret kas,kbs:SessionKey; 
+
+	role A {
+
+		fresh Na:Nonce;
+		var Nb,Nb1:Nonce;
+		var kab:SessionKey;
+		fresh T0,T:Timestamp;
+
+		send_1(A,B,A,Na,T0); 
+		recv_4(B,A,{Na,B,kab}kas,T,{Na,T}kab,Nb1);
+		send_5(A,B,{Nb1,T}kab);
+           claim_A1(A,Secret,kab);
+		claim_A2(A,Nisynch);
+		
+
+		}
+
+
+	role B {
+
+		var Na:Nonce;
+		fresh Nb,Nb1:Nonce;
+		var kab:SessionKey;
+		fresh T0,T:Timestamp;
+
+		recv_1(A,B,A,Na,T0);
+		send_2(B,S,A,Na,T,B,Nb);
+		recv_3(S,B,{kab,Nb,A,{Na,B,kab}kas}kbs,T);
+		send_4(B,A,{Na,B,kab}kas,T,{Na,T}kab,Nb1);
+		recv_5(A,B,{Nb1,T}kab);
+		claim_B1(B,Secret,kab);   
+		claim_B2(B,Nisynch);
+		
+		}
+
+
+	role S {
+
+		var Na,Nb:Nonce;
+		fresh T0,T:Timestamp;
+		const kab:  SessionKey;
+
+		recv_2(B,S,A,Na,T,B,Nb);
+		send_3(S,B,{kab,Nb,A,{Na,B,kab}kas}kbs,T);
+          claim_S1(S,Secret,kab);            
+		claim_S2(S,Nisynch);
+		
+		}
+}
+
+
+const kab:SessionKey; 
+const eve :Agent ;
+untrusted eve ; 
+compromised kab(eve); 
+
+
